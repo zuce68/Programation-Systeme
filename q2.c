@@ -5,21 +5,21 @@
 #include <fcntl.h>
 
 int main() {
-    int file_desc, status;
+    int file, status;
     pid_t child;
 
-    file_desc = open("file.txt", O_RDONLY);
-    if (file_desc < 0) {
+    file = open("file.txt", O_RDONLY);
+    if (file < 0) {
         printf("Error opening file\n");
         exit(1);
     }
 
     child = fork();
     if (child == 0) {
-        char buffer[100];
-        int read_bytes;
-        while ((read_bytes = read(file_desc, buffer, 100)) > 0) {
-            write(1, buffer, read_bytes);
+        char buffer[10000];
+        int rd_bytes;
+        while ((rd_bytes = read(file, buffer, 10000)) > 0) {
+            write(1, buffer, rd_bytes);
         }
         sleep(5);
         printf("Child terminating\n");
@@ -31,6 +31,6 @@ int main() {
         printf("Child status value: %d\n", WEXITSTATUS(status));
     }
 
-    close(file_desc);
+    close(file);
     return 0;
 }
