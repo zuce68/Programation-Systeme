@@ -4,15 +4,24 @@
 #include <sys/wait.h> 
 #include <stdlib.h> 
 int main(int argc, char* argv[]) { 
-int pid; 
+int pid,status; 
 char cmd[100];
+int background = 0;
 char* arg1;
 char* arg2;
-if ((pid = fork())==0){ 
+
+while(1){
     printf("> ");
     fgets(cmd, 100, stdin);
 
-	int init_size = strlen(cmd);
+    if (cmd[strlen(cmd) - 2] == '&') {
+        cmd[strlen(cmd) - 2] = '\0';
+        background = 1;
+    }
+
+    if (cmd=="exit") exit(0);
+    
+    int init_size = strlen(cmd);
 	char delim[] = " ";
 
 	char *ptr = strtok(cmd, delim);
@@ -23,10 +32,23 @@ if ((pid = fork())==0){
 
     char* arg_list[3] = {arg1, arg2, (char *)0};
 
-    execvp(cmd,arg_list); 
-} 
-else{ 
-    int status; 
-    int term_pid = wait(&status); 
-    exit(1); } 
-} 
+     pid = fork();
+    if (pid == 0) {
+        // child process
+        execvp(cmd, arg_list);
+        printf("Error: Command not found\n");
+        exit(1);
+    } else if (pid > 0) {
+        // parent process
+        if (!background)
+            waitpid(pid, &status, 0);
+    } else {
+        printf("Error: Failed to fork child process\n");
+        exit(1);
+    }
+
+    background = 0;
+}
+return 0;
+
+}
