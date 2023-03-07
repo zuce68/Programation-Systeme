@@ -30,54 +30,58 @@ int main()
 
     while (1) {
         int client_pid;
-        int server_read_fd = open("/tmp/misiuk", O_RDONLY);
-        read(server_read_fd, &client_pid, sizeof(int));
-        close(server_read_fd);
+        int server_read_fd_pid = open("/tmp/misiuk", O_RDONLY);
+        read(server_read_fd_pid, &client_pid, sizeof(int));
+        close(server_read_fd_pid);
 
         printf("Received connection from client %d\n", client_pid);
 
 
-        char client_fifo_read[50];
-        char client_fifo_write[50];
+        char server_fifo_read[50];
+        char server_fifo_write[50];
+        int server_read_fd;
+        int server_write_fd;
+        
+        sprintf(server_fifo_read, "/tmp/fifo%d_2", client_pid);
+        sprintf(server_fifo_write, "/tmp/fifo%d_1", client_pid);
+
+        printf("%s\n%s\n", server_fifo_write, server_fifo_read);
+
+        while((server_write_fd = open(server_fifo_write, O_WRONLY))==-1){
+            fprintf(stderr, "trying to connect write\n");
+            sleep(1);
+        }   
+
+        while((server_read_fd = open(server_fifo_read, O_RDONLY))==-1){
+            fprintf(stderr, "trying to connect read\n");
+            sleep(1);
+        }   
+   
 
         
-        sprintf(client_fifo_read, "/tmp/fifo%d_2", client_pid);
-        sprintf(client_fifo_write, "/tmp/fifo%d_1", client_pid);
 
-        int client_read_fd = mkfifo(client_fifo_read, 0777);
-        if (client_read_fd != 0 && errno != EEXIST) {
-            perror("mkfifo");
-            exit(EXIT_FAILURE);
-        }
-        int client_write_fd = mkfifo(client_fifo_write, 0777);
-        if (client_write_fd != 0 && errno != EEXIST) {
-            perror("mkfifo");
-            exit(EXIT_FAILURE);
-        }
+        write(server_write_fd, "You are connected, send a message\n", 256);
 
-        int client_read = open(client_fifo_read, O_RDONLY);
-        int client_write = open(client_fifo_write, O_WRONLY);
+        char buffer[50];
 
-       write(client_fifo_write, "You are connected, send a message\n", strlen("You are connected, send a message\n") + 1);
-
-        char buffer;
         while (1) {
-            read(client_read, buffer, 1);
-            printf("Client %d: %s", client_pid, buffer);
+            read(server_read_fd, &buffer,256);
+            printf("Client %d: %s\n", client_pid, buffer);
 
-            if (strcmp(buffer, "quit\n") == 0) {
+            if (strcmp(buffer,"quit")==0){
                 break;
             }
 
             printf("Server: ");
-            buffer = getchar();
-            write(client_write, buffer, strlen(buffer) + 1);
+            fgets(buffer, 50, stdin);
+            printf("\n");
+            write(server_write_fd, &buffer, 256);
         }
 
-        close(client_read);
-        close(client_write);
-        unlink(client_fifo_read);
-        unlink(client_fifo_write);
+        close(server_read_fd);
+        close(server_write_fd);
+        unlink(server_fifo_read);
+        unlink(server_fifo_write);
         printf("Connection with client %d closed.\n", client_pid);
     }
 
