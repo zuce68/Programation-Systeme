@@ -10,7 +10,6 @@
 #include <time.h>
 
 #define MAX_NAME_LEN 50
-#define FIFO_MODE 0666
 #define TARGET_SCORE 100
 
 int roll_dice() {
@@ -25,29 +24,23 @@ int main(int argc, char *argv[]) {
     char *player_name = argv[1];
     srand(time(NULL) ^ getpid()); // use process ID as seed for random number generator
     int score = 0;
-
+    int server_fd;
     // Open FIFO for communication with server
-    int server_fd = open("/tmp/server", O_WRONLY);
-    if (server_fd == -1) {
-        printf("Error opening server FIFO\n");
-        exit(EXIT_FAILURE);
+    while((server_fd = open("/tmp/server", O_WRONLY))==-1){
+        fprintf(stderr, "trying to connect\n");
+        sleep(1);
     }
 
     // Create FIFO for communication with server
     char player_fifo[MAX_NAME_LEN+5]; // room for "/tmp/" prefix and null terminator
     sprintf(player_fifo, "/tmp/%s", player_name);
-    mkfifo(player_fifo, FIFO_MODE);
+    mkfifo(player_fifo, 0777);
 
     // Send player name to server
     write(server_fd, player_name, strlen(player_name)+1);
 
     // Open FIFO for communication with server
     int player_fd = open(player_fifo, O_RDONLY);
-    if (player_fd == -1) {
-        printf("Error opening player FIFO\n");
-        exit(EXIT_FAILURE);
-    }
-
     printf("%s connected to server!\n", player_name);
 
     while (score < TARGET_SCORE) {
