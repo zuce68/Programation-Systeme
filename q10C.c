@@ -19,8 +19,9 @@ int main() {
 
     key_car=0662;
     key_nb=0661;
+    while(1){
     // get shared memory segment created by server
- if ((shmid_car = shmget(key_car, SHM_SIZE, IPC_CREAT | 0666)) < 0) 
+    if ((shmid_car = shmget(key_car, SHM_SIZE, IPC_CREAT | 0666)) < 0) 
     { 
         perror("shmget");
         exit (1) ;
@@ -67,6 +68,6 @@ int main() {
     // detach from shared memory segment
     shmdt(shm_ptr_nb);
     shmdt(shm_ptr_car);
-
+    }
     return 0;
 }

@@ -56,28 +56,31 @@ int main()
             fprintf(stderr, "trying to connect read\n");
             sleep(1);
         }   
-   
 
-        
 
         write(server_write_fd, "You are connected, send a message\n", 256);
 
-        char buffer_w[50];
-        char buffer_r[50];
+        char buffer_w[256];
+        char buffer_r[256];
 
         while (1) {
-            read(server_read_fd, &buffer_r,256);
-            printf("Client %d: %s\n", client_pid, buffer_r);
+            printf("%d\n",server_read_fd);
+            int n = read(server_read_fd, buffer_r, 256);
 
-            if (strcmp(buffer_w,"quit")==0){
-                break;
+            printf("nnnn %d\n",n);
+            if ( n!= 0) {
+                buffer_r[n]='\0';
+                printf("Client: %s\n", buffer_r);
             }
 
-            printf("Server: ");
-            fgets(buffer_w, 50, stdin);
+           /* printf("Server: \n");
+            fgets(buffer_w, 256, stdin);
             printf("\n");
-            write(server_write_fd, &buffer_w, 256);
+            if (strcmp(buffer_w, "") != 0) {
+                write(server_write_fd, buffer_w, strlen(buffer_w));
+            }*/
         }
+
 
         close(server_read_fd);
         close(server_write_fd);

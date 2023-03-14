@@ -41,34 +41,38 @@ int main()
     exit(1);
 
     printf("FIFOs created\n");
+
     
     int client_read = open(client_fifo_read, O_RDONLY);
     int client_write = open(client_fifo_write, O_WRONLY);
-
     
-
     char buffer_w[50];
     char buffer_r[50];
    
-    read(client_read, &buffer_r, 256);
-    printf("Server: %s\n", buffer_r);
+    int n=read(client_read, buffer_r, 256);
+    buffer_r[n]='\0';
+    printf("%s\n", buffer_r);
 
-    while(1){
-
-        read(client_read, &buffer_r, 256);
-        printf("Server: %s\n", buffer_r);
-
-
-        printf("Client: ");
-        fgets(buffer_w, 50, stdin);
+    while (1) {
+        // write to server
+        printf("Client : \n");
+        fgets(buffer_w, 256, stdin);
         printf("\n");
-        write(client_write, &buffer_w, 256);    
-
-     
-        if (strcmp(buffer_w,"quit")==0) {
-            break;
+        if (strcmp(buffer_w, "") != 0) {
+            printf("%d\n",client_write);
+            write(client_write, buffer_w, strlen(buffer_w));
         }
+        
+        // read from server
+        int n = read(client_read, buffer_r, 256);
+        if (n != 0) {
+             buffer_r[n]='\0';
+            printf("Server : %s\n", buffer_r);
+        }
+
+       
     }
+
 
     close(client_read);
     close(client_write);
