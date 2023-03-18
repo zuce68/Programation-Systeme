@@ -5,7 +5,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <string.h>
-#include <signal.h>
 #include <errno.h>
 
 int server_pid;
@@ -64,14 +63,25 @@ int main()
         char buffer_r[256];
 
         while (1) {
-            printf("%d\n",server_read_fd);
-            int n = read(server_read_fd, buffer_r, 256);
+                // Réception du message
+            read(server_read_fd, buffer_r, 100);
+            printf("Client : %s", buffer_r);
 
-            printf("nnnn %d\n",n);
-            if ( n!= 0) {
-                buffer_r[n]='\0';
-                printf("Client: %s\n", buffer_r);
-            }
+            // Envoi de la réponse
+            printf("Entrez une réponse : ");
+            fgets(buffer_w, 100, stdin);
+            write(server_write_fd, buffer_w, strlen(buffer_w) + 1);
+
+            // // Affichage du message
+            // printf("Message reçu : %s\n", buf);
+            // printf("%d\n",server_read_fd);
+            // int n = read(server_read_fd, buffer_r, 256);
+
+            // printf("nnnn %d\n",n);
+            // if ( n!= 0) {
+            //     buffer_r[n]='\0';
+            //     printf("Client: %s\n", buffer_r);
+            // }
 
            /* printf("Server: \n");
             fgets(buffer_w, 256, stdin);

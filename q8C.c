@@ -30,9 +30,6 @@ int main()
 
     //unlink(client_fifo_read);
     //unlink(client_fifo_write);
-   
-
-    printf("%s\n%s\n", client_fifo_read, client_fifo_write);
 
 
     if (mkfifo(client_fifo_read, 0777)!=0)
@@ -43,6 +40,8 @@ int main()
     printf("FIFOs created\n");
 
     
+   
+  
     int client_read = open(client_fifo_read, O_RDONLY);
     int client_write = open(client_fifo_write, O_WRONLY);
     
@@ -55,20 +54,29 @@ int main()
 
     while (1) {
         // write to server
-        printf("Client : \n");
-        fgets(buffer_w, 256, stdin);
-        printf("\n");
-        if (strcmp(buffer_w, "") != 0) {
-            printf("%d\n",client_write);
-            write(client_write, buffer_w, strlen(buffer_w));
-        }
+        // printf("Client : \n");
+        // fgets(buffer_w, 256, stdin);
+        // printf("\n");
+        // if (strcmp(buffer_w, "") != 0) {
+        //     printf("%d\n",client_write);
+        //     write(client_write, buffer_w, strlen(buffer_w));
+        // }
         
-        // read from server
-        int n = read(client_read, buffer_r, 256);
-        if (n != 0) {
-             buffer_r[n]='\0';
-            printf("Server : %s\n", buffer_r);
-        }
+        // // read from server
+        // int n = read(client_read, buffer_r, 256);
+        // if (n != 0) {
+        //      buffer_r[n]='\0';
+        //     printf("Server : %s\n", buffer_r);
+        // }
+        // Envoi du message
+        printf("Entrez un message : ");
+        fgets(buffer_w, 100, stdin);
+        write(client_write, buffer_w, strlen(buffer_w) + 1);
+
+        // Réception de la réponse
+        read(client_read, buffer_r, 100);
+        printf("Serveur : %s", buffer_r);
+       
 
        
     }
